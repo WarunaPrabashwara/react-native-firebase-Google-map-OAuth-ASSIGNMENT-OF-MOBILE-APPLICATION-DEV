@@ -1,61 +1,58 @@
-import 'react-native-gesture-handler';
-import React, { useEffect, useState } from 'react'
-import { firebase } from './src/firebase/config'
-import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
-import { LoginScreen, HomeScreen, RegistrationScreen } from './src/screens'
-import {decode, encode} from 'base-64'
-if (!global.btoa) {  global.btoa = encode }
-if (!global.atob) { global.atob = decode }
+// App.js
+
+import * as React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import Login from './components/login';
+import Signup from './components/signup';
+import Dashboard from './components/dashboard';
 
 const Stack = createStackNavigator();
 
+function MyStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Signup"
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerStyle: {
+          backgroundColor: '#3740FE',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}>
+      <Stack.Screen 
+        name="Signup" 
+        component={Signup} 
+        options={{ title: 'Signup' }}
+      />       
+      <Stack.Screen 
+        name="Login" 
+        component={Login} 
+        options={
+          {title: 'Login'},
+          {headerLeft: null} 
+        }
+      />
+      <Stack.Screen 
+       name="Dashboard" 
+       component={Dashboard} 
+       options={
+         { title: 'Dashboard' },
+         {headerLeft: null} 
+       }
+      />
+    </Stack.Navigator>
+  );
+}
+
 export default function App() {
-
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
-
-  useEffect(() => {
-    const usersRef = firebase.firestore().collection('users');
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        usersRef
-          .doc(user.uid)
-          .get()
-          .then((document) => {
-            const userData = document.data()
-            setLoading(false)
-            setUser(userData)
-          })
-          .catch((error) => {
-            setLoading(false)
-          });
-      } else {
-        setLoading(false)
-      }
-    });
-  }, []);
-
-  if (loading) {
-    return (
-      <></>
-    )
-  }
-
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        { user ? (
-          <Stack.Screen name="Home">
-            {props => <HomeScreen {...props} extraData={user} />}
-          </Stack.Screen>
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Registration" component={RegistrationScreen} />
-          </>
-        )}
-      </Stack.Navigator>
+      <MyStack />
     </NavigationContainer>
   );
 }
